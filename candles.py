@@ -10,7 +10,7 @@ def calculate_decimal_places(value):
 # This function ensures that we get candles that look appropriate to the timeframe
 def get_ATR(timeframe):
     timeframes = {
-        "1 D": (10, 200),
+        "1 D": (40, 200),
         "1 W": (170, 400),
         "1 Mo": (400, 1200),
         "1 Min": (1, 10),
@@ -68,10 +68,11 @@ def generate_candles(rate, timeframe, numCandles, date_from):
             candle['date'] = current_date.strftime("%Y-%m-%dT%H:%M:%S.000Z")
         else:
             # For the subsequent candles, ensure the Open is equal to the last candle's Close, randomze the rest
-            candle['bidOpen'] = round(candles[-1]['bidClose'], 4)
+            candle['bidOpen'] = round(random.uniform(candles[-1]['bidOpen'] - adjusted_ATR, candles[-1]['bidOpen'] + adjusted_ATR), 4)
             candle['bidHigh'] = round(candle['bidOpen'] + random.uniform(0, adjusted_ATR), 4)
             candle['bidLow'] = round(candle['bidOpen'] - random.uniform(0, adjusted_ATR), 4)
-            candle['bidClose'] = round(random.uniform(candle['bidLow'], candle['bidHigh']), 4)
+            #candle['bidClose'] = round(random.uniform(candle['bidLow'], candle['bidHigh']), 4)
+            candle['bidClose'] = round(candles[-1]['bidOpen'], 4)
             candle['volume'] = random.randint(round(get_ATR(timeframe)*0.1), round(get_ATR(timeframe)*100))
             candle['date'] = ""
 
@@ -95,13 +96,15 @@ def export_to_csv(candles, filename='output.csv'):
             writer.writerow(candle)
 
 def main():
-    rate = 1.28418
+    rate = 1.2345
     timeframe = "1 D"
-    numCandles = 5
-    date_from = "2023-05-17T19:24:07.000Z" # optional
-    #date_from = ""
+    numCandles = 3
+    #date_from = "2023-01-01T12:00:00.000Z" # optional
+    date_from = ""
     candles = generate_candles(rate, timeframe, numCandles, date_from)
+    result = {"candles": candles}
     export_to_csv(candles)
-    print(json.dumps(candles, indent=4))
+    print(json.dumps(result, indent=4))
+
 
 main()
